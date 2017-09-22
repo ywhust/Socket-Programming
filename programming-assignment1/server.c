@@ -16,11 +16,14 @@
 #include <stdlib.h>         /* supports all sorts of functionality */
 #include <unistd.h>         /* for close() */
 #include <string.h>         /* support any string ops */
+#include <time.h>
 
 #define RCVBUFSIZE 512      /* The receive buffer size */
 #define SNDBUFSIZE 512      /* The send buffer size */
 #define BUFSIZE 40          /* Your name can be as many as 40 chars*/
 #define BALANCESIZE 10      /* The balance buffer size */
+
+double updateTimestemp(time_t *timestamp, time_t time);
 
 /* The main function */
 int main(int argc, char *argv[]) {
@@ -40,6 +43,11 @@ int main(int argc, char *argv[]) {
     int mySavingsBalance    = 5000;
     int myRetirementBalance = 10000;
     int myCollegeBalance    = 1500;
+
+    time_t checkingTimestamp[3] = {0};
+    time_t savingsTimestamp[3] = {0};
+    time_t retirementTimestamp[3] = {0};
+    time_t collegeTimestamp[3] = {0};
 
     char rcvBuf[RCVBUFSIZE];        /* Buffer to receive message from client */
     char sndBuf[SNDBUFSIZE];        /* Buffer to send message to client */
@@ -115,8 +123,8 @@ int main(int argc, char *argv[]) {
             balance = myCollegeBalance;
         }
 
-        /* Print the current account information */
-        printf("Account Name: %s, and the current Balance: %d\n", nameBuf, balance);
+        // /* Print the current account information */
+        // printf("Account Name: %s, and the current Balance: %d\n", nameBuf, balance);
 
         /* Ask the client for the specific operation */
         memset(&sndBuf, 0, SNDBUFSIZE);
@@ -128,7 +136,7 @@ int main(int argc, char *argv[]) {
         recvBytes = recv(clientSock, rcvBuf, RCVBUFSIZE, 0);
         if (strcmp(rcvBuf, "WITHDRAW") == 0) {
 
-            printf("Withdrawing money...\n");
+            // printf("Withdrawing money...\n");
 
             /* Ask for the amount */
             memset(&sndBuf, 0, SNDBUFSIZE);
@@ -139,19 +147,35 @@ int main(int argc, char *argv[]) {
             memset(&rcvBuf, 0, RCVBUFSIZE);
             recvBytes = recv(clientSock, rcvBuf, RCVBUFSIZE, 0);
 
+            /* Timeout */
+            time_t currentTime;
+            time(&currentTime);
+            double diff = 0.0;
+            if (strcmp(nameBuf, "myChecking") == 0) {
+                diff = updateTimestemp(checkingTimestamp, currentTime);
+            } else if (strcmp(nameBuf, "mySavings") == 0) {
+                diff = updateTimestemp(savingsTimestamp, currentTime);
+            } else if (strcmp(nameBuf, "myRetirement") == 0) {
+                diff = updateTimestemp(retirementTimestamp, currentTime);
+            } else if (strcmp(nameBuf, "myCollege") == 0) {
+                diff = updateTimestemp(collegeTimestamp, currentTime);
+            }
+
             /* Send the withdraw message to client */
             memset(&sndBuf, 0, SNDBUFSIZE);
             int amount = atoi(rcvBuf);
-            if (amount <= balance) {
+            if (diff <= 60.0) {
+                strcpy(sndBuf, "Error: Account Timed Out!");
+            } else if (amount <= balance) {
                 balance -= amount;
                 strcpy(sndBuf, "Withdraw Succeeded!");
             } else {
-                strcpy(sndBuf, "Withdraw Failed!");
+                strcpy(sndBuf, "Error: Insufficient Funds!");
             }
             sendBytes = send(clientSock, sndBuf, strlen(sndBuf), 0);
 
-            /* Print the current account information */
-            printf("Account Name: %s, and the current Balance: %d\n", nameBuf, balance);
+            // /* Print the current account information */
+            // printf("Account Name: %s, and the current Balance: %d\n", nameBuf, balance);
 
             /* Update the balance of the specific account */
             if (strcmp(nameBuf, "myChecking") == 0) {
@@ -178,5 +202,24 @@ int main(int argc, char *argv[]) {
         close(clientSock);
     }
     return 0;
+}
+
+double updateTimestemp(time_t *timestamp, time_t time) {
+    if (timestamp[0] == 0) {
+        timestamp[0] = time;
+        return 100.0;
+    } else if (timestamp[1] == 0) {
+        timestamp[1] = time;
+        return 100.0;
+    } else if (timestamp[2] == 0) {
+        timestamp[2] = time;
+        return 100.0;
+    } else {
+        time_t temp = timestamp[0];
+        timestamp[0] = timestamp[1];
+        timestamp[1] = timestamp[2];
+        timestamp[2] = time;
+        return difftime(time, temp);
+    }
 }
 
