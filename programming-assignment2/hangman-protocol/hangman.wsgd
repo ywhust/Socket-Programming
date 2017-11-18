@@ -1,0 +1,16 @@
+PROTONAME         HangmanGame
+PROTOSHORTNAME    Hangman
+PROTOABBREV       hgt
+
+# Specify when the protocol is used.
+# Change the port, at least, to see your data.
+PARENT_SUBFIELD          tcp.port
+PARENT_SUBFIELD_VALUES   5100 
+
+MSG_HEADER_TYPE                        T_hangman_header
+MSG_ID_FIELD_NAME                      msg_flag
+MSG_MAIN_TYPE      T_hangman
+
+PROTO_TYPE_DEFINITIONS
+
+include  hangman.fdesc ;

@@ -1,0 +1,27 @@
+#
+struct T_hangman_header
+{
+    byte_order  big_endian ;
+    uint8 msg_flag;
+    
+    if (msg_flag == 0) 
+    {
+        uint8 word_length ;
+        uint8 num_guesses ;
+        char[word_length + num_guesses] data ;
+    }
+    else
+    {
+        char[msg_flag] msg ;
+    }
+}
+
+# 
+struct T_hangman 
+{
+    T_hangman_header header ;
+    raw(*) end_of_msg ;
+}
+
+
+
