@@ -13,7 +13,7 @@ import sys
 # https://docs.python.org/3.6/howto/sockets.html
 class ClientSocket:
     def __init__(self, sock=None):
-        if scok == None:
+        if sock == None:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         else:
             self.sock = sock
@@ -27,10 +27,11 @@ class ClientSocket:
     def send(self, data):
         msg_len = chr(len(data))
         msg = msg_len + data
-        self.sock.send(msg)
+        self.sock.send(msg.encode('utf-8'))
 
     def recv(self):
         msg = self.sock.recv(2048)
+        msg = msg.decode('utf-8')
         msg_flag = ord(msg[0])
         server_msg = {'msg_flag': msg_flag}
         if msg_flag == 0:
@@ -46,16 +47,15 @@ def display(msg):
     data = msg['data']
     first_line = '$ ' + ' '.join(data[:word_len])
     second_line = '$ Incorrect Guesses: ' + ' '.join(data[word_len:])
-    print(first_line + '\n' + second_line + '\n')
+    print(first_line + '\n' + second_line)
     return set(data) - {'_'}
 
 def guess(letter_set):
-    letter = input('$ Letter to guess: ')
+    letter = input('$ \n$ Letter to guess: ')
     while len(letter) >= 2 or not letter.isalpha():
         letter = input('$ Error! Pleas guess one letter.\n$ Letter to guess: ')
     while letter.lower() in letter_set:
-        letter = input('$ Error! Leeter {} has been guessend before, \
-            pleas guess another letter.\n$ Letter to guess: '.format(letter))
+        letter = input('$ Error! Leeter {} has been guessend before, pleas guess another letter.\n$ Letter to guess: '.format(letter))
     return letter.lower()
 
 def run():
@@ -66,7 +66,7 @@ def run():
 
     # build the client socket and connect to the server
     server_ip   = sys.argv[1]
-    server_port = sys.argv[2]
+    server_port = int(sys.argv[2])
     sock = ClientSocket()
     sock.connect(server_ip, server_port)
 
@@ -77,7 +77,7 @@ def run():
         return
 
     # game starts
-    sock.send("")
+    sock.send('')
     # keep sending and receiving message until win or lose
     while True:
         server_msg = sock.recv()
@@ -89,6 +89,7 @@ def run():
             print('$ ' + server_msg['data'])
             if server_msg['data'] == 'Game Over!':
                 break
+            sock.send('') # empty message as ACKs
     sock.close()
 
 if __name__ == '__main__':
