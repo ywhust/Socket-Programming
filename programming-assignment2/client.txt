@@ -1,0 +1,73 @@
+python client.py localhost 2017
+$ Ready to start game? (y/n): y
+$ _ _ _ _ _ _ _
+$ Incorrect Guesses:
+$
+$ Letter to guess: a
+$ _ _ _ _ _ _ a
+$ Incorrect Guesses:
+$
+$ Letter to guess: g
+$ g _ _ _ g _ a
+$ Incorrect Guesses:
+$
+$ Letter to guess: e
+$ g e _ _ g _ a
+$ Incorrect Guesses:
+$
+$ Letter to guess: o
+$ g e o _ g _ a
+$ Incorrect Guesses:
+$
+$ Letter to guess: r
+$ g e o r g _ a
+$ Incorrect Guesses:
+$
+$ Letter to guess: i
+$ g e o r g i a
+$ Incorrect Guesses:
+$ You Win!
+$ Game Over!
+
+
+================================
+python client.py localhost 2017
+$ Ready to start game? (y/n): y
+$ server-overloaded
+
+
+================================
+python client.py localhost 2017
+$ Ready to start game? (y/n): y
+$ _ _ _
+$ Incorrect Guesses:
+$
+$ Letter to guess: a
+$ _ _ _
+$ Incorrect Guesses: a
+$
+$ Letter to guess: b
+$ _ _ _
+$ Incorrect Guesses: a b
+$
+$ Letter to guess: c
+$ _ c _
+$ Incorrect Guesses: a b
+$
+$ Letter to guess: d
+$ _ c _
+$ Incorrect Guesses: a b d
+$
+$ Letter to guess: e
+$ _ c _
+$ Incorrect Guesses: a b d e
+$
+$ Letter to guess: f
+$ _ c _
+$ Incorrect Guesses: a b d e f
+$
+$ Letter to guess: g
+$ _ c _
+$ Incorrect Guesses: a b d e f g
+$ You Lose :(
+$ Game Over!

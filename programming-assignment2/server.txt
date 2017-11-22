@@ -1,0 +1,10 @@
+python server.py 2017
+Waiting for connection...
+Got the connection from 127.0.0.1:53188
+Got the connection from 127.0.0.1:53189
+Got the connection from 127.0.0.1:53190
+Got the connection from 127.0.0.1:53191
+End the connection from 127.0.0.1:53191
+End the connection from 127.0.0.1:53188
+End the connection from 127.0.0.1:53189
+End the connection from 127.0.0.1:53190
