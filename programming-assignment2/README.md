@@ -9,7 +9,8 @@
 
 ## Team member
 
-Yang Wu (ywu613) and Yifei Wang (ywang3167)
+Yang Wu (ywu613) and Yifei Wang (ywang3167).
+
 For this project, both of us contribute the same. Yifei mainly works on client.py and Yang is responsible for server side.
 
 ## How to execute
