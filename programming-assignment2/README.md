@@ -16,3 +16,7 @@ For this project, both of us contribute the same. Yifei mainly works on client.p
 ## How to execute
 
 The Python version is 3.6.0. First, use __python server.py 2017__ to set up the server. Then use __python client.py localhost 2017__ to set up client and start the game.
+
+## Test results
+
+The client.txt stores the output results from client side. In this file, we record both three situations - win, lose or overloaded. The server.txt contains messagess about the connection status. And the word_list.txt is used as the default word dictionary.
