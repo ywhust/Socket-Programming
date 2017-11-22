@@ -52,10 +52,14 @@ def display(msg):
 
 def guess(letter_set):
     letter = input('$ \n$ Letter to guess: ')
-    while len(letter) >= 2 or not letter.isalpha():
-        letter = input('$ Error! Pleas guess one letter.\n$ Letter to guess: ')
-    while letter.lower() in letter_set:
-        letter = input('$ Error! Leeter {} has been guessend before, pleas guess another letter.\n$ Letter to guess: '.format(letter))
+    while True:
+        if len(letter) >= 2 or not letter.isalpha():
+            print('$ Error! Please guess one letter.')
+        elif letter.lower() in letter_set:
+            print('$ Error! Letter {} has been guessed before, please guess another letter.'.format(letter))
+        else:
+            break
+        letter = input('$ Letter to guess: ')
     return letter.lower()
 
 def run():
@@ -73,6 +77,7 @@ def run():
     # ask user if they are ready to start the game
     is_ready = input('$ Ready to start game? (y/n): ')
     if is_ready == 'n': # if no, close socket and exit
+        sock.send(is_ready)
         sock.close()
         return
 
@@ -81,15 +86,16 @@ def run():
     # keep sending and receiving message until win or lose
     while True:
         server_msg = sock.recv()
+        letter = ''
         if server_msg['msg_flag'] == 0:
             letter_set = display(server_msg)
-            letter = guess(letter_set)
-            sock.send(letter)
+            if '_' in server_msg['data'] and server_msg['num_incorrect'] != 6: # update the next guessed letter
+                letter = guess(letter_set)
         else:
             print('$ ' + server_msg['data'])
-            if server_msg['data'] == 'Game Over!':
+            if server_msg['data'] == 'Game Over!' or server_msg['data'] == 'server-overloaded':
                 break
-            sock.send('') # empty message as ACKs
+        sock.send(letter) # empty message as ACKs
     sock.close()
 
 if __name__ == '__main__':

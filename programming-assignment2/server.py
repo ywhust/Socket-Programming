@@ -7,6 +7,7 @@
 
 import socket
 import sys
+import random
 
 from threading import Thread
 
@@ -15,10 +16,11 @@ class ClientThread(Thread):
         Thread.__init__(self)
         self.sock = sock
         self.nums = nums
-        print('[+] New thread for this connection.')
+        # print('[+] New thread for this connection.')
 
     def run(self):
         start(self.sock, self.nums)
+
 
 # Client socket with message encode and decode on the server side
 class ClientSocket:
@@ -26,9 +28,10 @@ class ClientSocket:
     message = {'win': 'You Win!', 'lose': 'You Lose :(', 'over': 'Game Over!', 'overload': 'server-overloaded'}
     count = 0;
 
-    def __init__(self, sock, word):
+    def __init__(self, sock, addr, word):
         self.sock = sock
         self.word = list(word)
+        self.addr = addr
         self.data = ['_'] * len(word)
         self.word_len = len(word)
         self.num_incorrect = 0
@@ -44,8 +47,8 @@ class ClientSocket:
         return '' if msg_len == 0 else msg[1:1+msg_len]
 
     # generate game control packet
-    def control_pckt(self, letter, is_correct=True):
-        if not is_correct:
+    def control_pckt(self, letter=None, is_correct=True):
+        if not is_correct and letter:
             self.data.append(letter)
             self.num_incorrect += 1
         data = ''.join(self.data)
@@ -74,11 +77,16 @@ class ClientSocket:
     def close(self):
         self.sock.close()
         ClientSocket.count -= 1
+        print('End the connection from {}:{}'.format(self.addr[0], self.addr[1]))
+
 
 # start hangman game for specific client
 def start(sock, nums):
     # wait for start request
     letter = sock.recv()
+    if letter == 'n':
+        sock.close()
+        return
 
     # check if this is the fourth client
     if ClientSocket.count > 3:
@@ -87,25 +95,32 @@ def start(sock, nums):
         sock.close()
         return
 
+    # send the first control packet to client
+    control_msg = sock.control_pckt()
+    sock.send(control_msg)
+
     # check the answer and ask for next letter
     while sock.num_incorrect < nums:
+        letter = sock.recv()
         is_correct = sock.match(letter)
+        control_msg = sock.control_pckt(letter, is_correct)
+        sock.send(control_msg)
         if sock.check():
+            letter = sock.recv()
             win_msg = sock.message_pckt('win')
             sock.send(win_msg)
             break
-        control_msg = sock.control_pckt(letter, is_correct)
-        sock.send(control_msg)
-        letter = sock.recv()
 
     # game over
     if sock.num_incorrect == nums:
+        letter = sock.recv()
         lose_msg = sock.message_pckt('lose')
         sock.send(lose_msg)
     letter = sock.recv()
     over_msg = sock.message_pckt('over')
     sock.send(over_msg)
     sock.close()
+
 
 def main():
     num_args = len(sys.argv)
@@ -114,9 +129,15 @@ def main():
         exit(1)
 
     server_port = int(sys.argv[1])
-    filename = "" # default word list
+    filename = "word_list.txt" # default word list
     if num_args == 3:
         filename = sys.argv[2]
+
+    word_list = []
+    with open(filename, 'r') as words:
+        words.readline()
+        for word in words:
+            word_list.append(word.strip().lower())
 
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -126,11 +147,10 @@ def main():
 
     while True:
         conn, addr = server_sock.accept()
-        print('Got connection from {}'.format(addr))
-        client_socket = ClientSocket(conn, 'word')
+        print('Got the connection from {}:{}'.format(addr[0], addr[1]))
+        client_socket = ClientSocket(conn, addr, random.choice(word_list))
         thread = ClientThread(client_socket, 6)
         thread.start()
-
 
 if __name__ == '__main__':
     main()
